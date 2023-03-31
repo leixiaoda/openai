@@ -1,0 +1,84 @@
+@bg-color: #b5c5d8;
+
+.App {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: @bg-color;
+}
+
+.input-wrapper {
+  width: calc(~'100% - 10px');
+  padding: 5px;
+}
+
+.main-box {
+  flex-grow: 1;
+  overflow: auto;
+  scroll-behavior: smooth;
+  background-color: @bg-color;
+
+  .dialog {
+    margin: 10px;
+    padding: 20px;
+    border-radius: 12px;
+    line-height: 20px;
+    white-space: pre-wrap;
+    background-color: #e9ecf0;
+    &.is-user {
+      background-color: #d9e5f3;
+    }
+  }
+}
+
+.editor {
+  margin: 20px 0;
+  background-color: @bg-color;
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+  background-color: #3c3c3c;
+}
+
+.console {
+  width: 100%;
+  height: 200px;
+  padding: 20px 30px;
+  box-sizing: border-box;
+  background-color: @bg-color;
+
+  button {
+    width: 110px;
+    height: 35px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    border-width: 0;
+    background-color: #c1c1c1;
+    cursor: pointer;
+
+    &:disabled {
+      cursor: not-allowed;
+    }
+  }
+
+  &--content {
+    color: #3ec797;
+    font-family: Menlo, Monaco, "Courier New", monospace;
+    font-weight: bold;
+
+    &.isError {
+      color: #b14747;
+    }
+
+    .output {
+      font-size: 20px;
+      line-height: 30px;
+    }
+    .custom {
+      font-size: 40px;
+      line-height: 55px;
+    }
+  }
+}
