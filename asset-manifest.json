@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/openai/static/css/main.61142cc6.css",
-    "main.js": "/openai/static/js/main.846a71bc.js",
+    "main.js": "/openai/static/js/main.72a2115a.js",
     "static/js/555.2d3071ef.chunk.js": "/openai/static/js/555.2d3071ef.chunk.js",
     "index.html": "/openai/index.html",
     "main.61142cc6.css.map": "/openai/static/css/main.61142cc6.css.map",
-    "main.846a71bc.js.map": "/openai/static/js/main.846a71bc.js.map",
+    "main.72a2115a.js.map": "/openai/static/js/main.72a2115a.js.map",
     "555.2d3071ef.chunk.js.map": "/openai/static/js/555.2d3071ef.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.61142cc6.css",
-    "static/js/main.846a71bc.js"
+    "static/js/main.72a2115a.js"
   ]
 }
