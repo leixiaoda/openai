@@ -113,7 +113,7 @@ function App() {
           value={inputValue}
           className="input"
           onChange={onInputChange}
-          placeholder="请输入..."
+          placeholder="Please enter here..."
           autoSize={{ minRows: 3, maxRows: 10 }}
           onPressEnter={onPressKeydown}
           disabled={status === NETWORK_STATUS.PENDING}
