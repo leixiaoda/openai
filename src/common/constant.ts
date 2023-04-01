@@ -9,5 +9,3 @@ export enum ROLE {
   USER = 'USER',
   ASSISTANT = 'ASSISTANT',
 }
-  
-export const KEY_3_POINT_5 = '';

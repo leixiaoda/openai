@@ -3,7 +3,7 @@ import classNames from 'classnames';
 
 import { Input } from 'antd';
 
-import { NETWORK_STATUS, ROLE, KEY_3_POINT_5 } from './common/constant';
+import { NETWORK_STATUS, ROLE } from './common/constant';
 import './App.less';
 
 const { TextArea } = Input;
@@ -15,19 +15,15 @@ interface Dialog {
 
 function App() {
   const [status, setStatus] = useState(NETWORK_STATUS.UNKNOWN);
-  const [result, setResult] = useState('');
   const [inputValue, setInputValue] = useState('');
   const [dialogList, setDialogList] = useState<Dialog[]>([]);
   const scrollListRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<any>(null);
+  const apiKey = useRef('');
 
-  useEffect(() => {
-    if (dialogList.length && dialogList[dialogList.length - 1].role === ROLE.USER) {
-      sendRequest(inputValue);
-      setInputValue('');
-    }
-    scrollListRef.current?.scrollTo(0, scrollListRef.current.scrollHeight);
-  }, [dialogList]);
+  const addDialog = (role: ROLE, content: string) => {
+    setDialogList([...dialogList, { role, content }]);
+  }
 
   const sendRequest = (content: string) => {
     const body = JSON.stringify({
@@ -39,37 +35,48 @@ function App() {
     });
     
     setStatus(NETWORK_STATUS.PENDING);
-    fetch('/v1/chat/completions', {
+    fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       body,
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${KEY_3_POINT_5}`,
+        'Authorization': `Bearer ${apiKey.current}`,
       },
     }).then(res =>res.json()).then(res => {
-      const { choices } = res;
-      if (choices.length <= 0) {
-        console.log('error: choices is null');
+      const { choices, error } = res;
+      
+      if (error || choices.length <= 0) {
+        const errInfo = error ? `${error.code}: ${error.message}` : 'choices is null';
+        addDialog(ROLE.ASSISTANT, `error: ,${errInfo}`);
         setStatus(NETWORK_STATUS.ERROR);
         return;
       }
 
-      choices.map((c: any) => {
-        setDialogList([...dialogList, {
-          role: ROLE.ASSISTANT,
-          content: c.message.content,
-        }]);
+      choices.forEach((c: any) => {
+        addDialog(ROLE.ASSISTANT, c.message.content);
       });
       setStatus(NETWORK_STATUS.FINISHED);
     }).catch(error => {
-      console.log('error: ', error.toString());
+      addDialog(ROLE.ASSISTANT, `error: , ${error.toString()}`);
       setStatus(NETWORK_STATUS.ERROR);
     });
-  }
+  };
+
+  useEffect(() => {
+    if (dialogList.length && dialogList[dialogList.length - 1].role === ROLE.USER) {
+      if (apiKey.current.length) {
+        sendRequest(inputValue);
+      } else {
+        apiKey.current = inputValue;
+      }
+      setInputValue('');
+    }
+    scrollListRef.current?.scrollTo(0, scrollListRef.current.scrollHeight);
+  }, [dialogList]);
 
   const onInputChange = (e: any) => {
     setInputValue(e.target.value);
-  }
+  };
 
   const onPressKeydown = (e: any) => {
     e.preventDefault();
@@ -77,12 +84,9 @@ function App() {
     if (e.metaKey) {
       setInputValue(inputValue + '\n');
     } else {
-      setDialogList([...dialogList, {
-        role: ROLE.USER,
-        content: inputValue,
-      }]);
+      addDialog(ROLE.USER, inputValue);
     }
-  }
+  };
 
   const renderDialog = (dialog: Dialog, index: number) => (
     <div
