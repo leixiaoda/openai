@@ -3,7 +3,7 @@ import classNames from 'classnames';
 
 import { Input } from 'antd';
 
-import { NETWORK_STATUS, ROLE } from './common/constant';
+import { NETWORK_STATUS, ROLE, COMMAND_NEW } from './common/constant';
 import './App.less';
 
 const { TextArea } = Input;
@@ -11,6 +11,7 @@ const { TextArea } = Input;
 interface Dialog {
   role: ROLE,
   content: string,
+  isContext: boolean,
 } 
 
 function App() {
@@ -21,17 +22,29 @@ function App() {
   const inputRef = useRef<any>(null);
   const apiKey = useRef('');
 
-  const addDialog = (role: ROLE, content: string) => {
-    setDialogList([...dialogList, { role, content }]);
-  }
+  const addDialog = (role: ROLE, content: string, isContext: boolean) => {
+    setDialogList([...dialogList, { role, content, isContext }]);
+  };
 
-  const sendRequest = (content: string) => {
+  const getMsgs = () => {
+    if (!dialogList.length) {
+      return [];
+    }
+
+    const context: Dialog[] = [];
+    for (var i = dialogList.length - 1; i >= 0 && dialogList[i].isContext; i--) {
+      context.unshift(dialogList[i]);
+    }
+    return context.map(c => ({
+      'role': c.role,
+      'content': c.content,
+    }));
+  };
+
+  const sendRequest = () => {
     const body = JSON.stringify({
       'model': 'gpt-3.5-turbo',
-      'messages': [{
-        'role': 'user',
-        'content': content,
-      }],
+      'messages': getMsgs(),
     });
     
     setStatus(NETWORK_STATUS.PENDING);
@@ -47,27 +60,25 @@ function App() {
       
       if (error || choices.length <= 0) {
         const errInfo = error ? `${error.code}: ${error.message}` : 'choices is null';
-        addDialog(ROLE.ASSISTANT, `error: ,${errInfo}`);
+        addDialog(ROLE.ASSISTANT, `error: ,${errInfo}`, false);
         setStatus(NETWORK_STATUS.ERROR);
         return;
       }
 
       choices.forEach((c: any) => {
-        addDialog(ROLE.ASSISTANT, c.message.content);
+        addDialog(ROLE.ASSISTANT, c.message.content, true);
       });
       setStatus(NETWORK_STATUS.FINISHED);
     }).catch(error => {
-      addDialog(ROLE.ASSISTANT, `error: , ${error.toString()}`);
+      addDialog(ROLE.ASSISTANT, `error: , ${error.toString()}`, false);
       setStatus(NETWORK_STATUS.ERROR);
     });
   };
 
   useEffect(() => {
     if (dialogList.length && dialogList[dialogList.length - 1].role === ROLE.USER) {
-      if (apiKey.current.length) {
-        sendRequest(inputValue);
-      } else {
-        apiKey.current = inputValue;
+      if (dialogList[dialogList.length - 1].isContext) {
+        sendRequest();
       }
       setInputValue('');
     }
@@ -84,7 +95,16 @@ function App() {
     if (e.metaKey) {
       setInputValue(inputValue + '\n');
     } else {
-      addDialog(ROLE.USER, inputValue);
+      if (apiKey.current.length) {
+        if (inputValue.toLowerCase() === COMMAND_NEW) {
+          addDialog(ROLE.USER, inputValue, false);
+        } else {
+          addDialog(ROLE.USER, inputValue, true);
+        }
+      } else {
+        apiKey.current = inputValue;
+        addDialog(ROLE.USER, inputValue, false);
+      }
     }
   };
 

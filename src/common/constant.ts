@@ -6,6 +6,8 @@ export enum NETWORK_STATUS {
 }
 
 export enum ROLE {
-  USER = 'USER',
-  ASSISTANT = 'ASSISTANT',
+  USER = 'user',
+  ASSISTANT = 'assistant',
 }
+
+export const COMMAND_NEW = 'new';
